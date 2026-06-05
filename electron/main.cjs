@@ -1,4 +1,5 @@
 const { app, BrowserWindow, shell } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 const isDev = !!process.env.ELECTRON_DEV;
@@ -31,7 +32,18 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  // Auto-update: chỉ chạy ở bản đã đóng gói (bản cài Setup), bỏ qua khi dev/portable.
+  // Tải bản mới ở nền, cài tự động khi người dùng thoát app -> lần mở sau là bản mới.
+  if (!isDev) {
+    autoUpdater.on('error', (e) => console.error('[auto-update]', e?.message || e));
+    autoUpdater.checkForUpdatesAndNotify().catch((e) =>
+      console.error('[auto-update] check failed:', e?.message || e)
+    );
+  }
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

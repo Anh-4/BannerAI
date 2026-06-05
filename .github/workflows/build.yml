@@ -23,17 +23,17 @@ jobs:
 
       - run: npm run build
 
-      - name: Package .exe (electron-builder)
-        run: npx electron-builder --win --publish never
+      # electron-builder tự publish lên GitHub Release: .exe + latest.yml + .blockmap
+      # (latest.yml là metadata để app cũ biết có bản mới -> auto-update).
+      - name: Build & publish .exe (kèm metadata auto-update)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always
 
-      - name: Upload artifact
+      - name: Upload artifact (backup)
         uses: actions/upload-artifact@v4
         with:
           name: banner-ai-windows
-          path: release/*.exe
-
-      - name: Attach to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release/*.exe
+          path: |
+            release/*.exe
+            release/latest.yml

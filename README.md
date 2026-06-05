@@ -56,6 +56,30 @@ Vào tab **Actions** xem tiến trình; build xong file .exe nằm trong Release
 
 ---
 
+## 5. Tự động cập nhật (auto-update)
+
+App tự kiểm tra bản mới trên GitHub Releases mỗi lần mở, tải ngầm và cài khi người dùng thoát app → lần mở sau là bản mới. Không cần gửi lại file cho ai.
+
+> ⚠️ Auto-update **chỉ chạy với bản cài đặt `Banner AI Setup x.x.x.exe`** (NSIS), KHÔNG chạy với bản portable. → Chia sẻ bản **Setup** cho mọi người.
+
+**Cách ra bản mới (rất quan trọng — phải khớp version):**
+
+1. Sửa code.
+2. Tăng `"version"` trong [package.json](package.json), ví dụ `1.0.1` → `1.0.2`.
+3. Commit, rồi đẩy tag **trùng version** đó:
+
+```bash
+git add -A && git commit -m "v1.0.2: ..."
+git tag v1.0.2
+git push origin main --tags
+```
+
+GitHub Actions tự build và publish (kèm `latest.yml`). Người dùng đang chạy bản cũ sẽ tự cập nhật lên `1.0.2` ở lần mở app kế tiếp.
+
+> Tag và số version trong package.json **phải giống nhau**, nếu lệch app sẽ không nhận ra bản mới.
+
+---
+
 ## Cấu trúc
 
 ```
