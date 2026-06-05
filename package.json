@@ -1,7 +1,7 @@
 {
   "name": "banner-ai",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Banner AI - tạo banner quảng cáo bằng AI (Gemini Nano Banana Pro) cho Kozmoz Studio",
   "author": "Kozmoz Studio",
   "main": "electron/main.cjs",
@@ -59,7 +59,8 @@
       {
         "provider": "github",
         "owner": "Anh-4",
-        "repo": "BannerAI"
+        "repo": "BannerAI",
+        "releaseType": "release"
       }
     ]
   }
