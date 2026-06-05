@@ -1,8 +1,8 @@
 {
   "name": "banner-ai",
   "private": true,
-  "version": "1.2.1",
-  "description": "Banner AI - tạo banner quảng cáo bằng AI (Gemini Nano Banana Pro) cho Kozmoz Studio",
+  "version": "1.3.0",
+  "description": "Banner AI - tạo banner quảng cáo bằng AI (qua OpenRouter, đổi model linh hoạt) cho Kozmoz Studio",
   "author": "Kozmoz Studio",
   "main": "electron/main.cjs",
   "type": "module",

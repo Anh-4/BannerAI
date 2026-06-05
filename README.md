@@ -1,7 +1,7 @@
 # 🍌 Banner AI — Kozmoz Studio
 
-App desktop tạo banner quảng cáo bằng AI (Google Gemini "Nano Banana Pro") cho 3 brand POD: **ECZ · Kozmoz · LO**.
-Upload ảnh sản phẩm/logo/nền → nhập mô tả + text → tạo 3 mẫu banner (Tối giản / Điện ảnh / Social Dynamic).
+App desktop tạo banner quảng cáo bằng AI **qua OpenRouter** (đổi model linh hoạt: Nano Banana Pro, Nano Banana/Flash, GPT Image, Seedream 4.5…) cho 3 brand POD: **ECZ · Kozmoz · LO**.
+Upload ảnh sản phẩm/logo/nền → chọn model → nhập mô tả + text → tạo 3 mẫu banner (Tối giản / Điện ảnh / Social Dynamic).
 
 > Stack: React + TypeScript + Vite + TailwindCSS. Đóng gói desktop bằng **Electron "thin shell"**:
 > file .exe portable chỉ là vỏ mỏng, mở lên **tải giao diện từ GitHub Pages** → luôn là bản mới nhất.
@@ -32,13 +32,14 @@ npm run electron:dev   # app desktop (vỏ Electron tải vite localhost), hot-r
 # hoặc:  npm run dev    # chỉ chạy web http://localhost:5173
 ```
 
-## 3. API key Gemini
+## 3. API key OpenRouter
 
-App cần Gemini API key (lấy MIỄN PHÍ tại https://aistudio.google.com/apikey).
+App cần **OpenRouter API key** (lấy tại https://openrouter.ai/keys) — 1 key dùng cho mọi model.
 
-- App **tự hiện popup nhập key mỗi khi mở**; key chỉ **lưu trên máy người dùng** (localStorage), không gửi đi đâu ngoài Google khi tạo ảnh. Mỗi người tự nhập key của mình → an toàn khi chia sẻ.
+- App **tự hiện popup nhập key mỗi khi mở**; key chỉ **lưu trên máy người dùng** (localStorage), chỉ gửi tới OpenRouter khi tạo ảnh. Mỗi người tự nhập key của mình → an toàn khi chia sẻ.
 - Nút **"Đổi API Key"** ở góc dưới panel trái để đổi key bất cứ lúc nào.
-- (Tùy chọn) Nhúng sẵn key cho team nội bộ: copy `.env.example` → `.env`, điền `VITE_GEMINI_API_KEY=...`. ⚠️ KHÔNG nhúng nếu chia sẻ rộng.
+- Chọn model ở **dropdown "Model AI (OpenRouter)"** ngay trên nút tạo; chọn "Khác" để tự nhập model ID bất kỳ trên OpenRouter.
+- (Tùy chọn) Nhúng sẵn key cho team nội bộ: copy `.env.example` → `.env`, điền `VITE_OPENROUTER_API_KEY=...`. ⚠️ KHÔNG nhúng nếu chia sẻ rộng.
 
 ## 4. Build file .exe portable để chia sẻ
 
@@ -72,7 +73,7 @@ GitHub Actions ([deploy-pages.yml](.github/workflows/deploy-pages.yml)) tự bui
 banner-ai/
 ├── src/
 │   ├── App.tsx                  # Giao diện chính (logic tạo banner)
-│   ├── flow-sdk.ts              # Adapter: thay flow-sdk gốc bằng Gemini API
+│   ├── flow-sdk.ts              # Adapter: gọi OpenRouter + danh sách model (IMAGE_MODELS)
 │   ├── main.tsx · index.css     # Khởi động React + Tailwind
 │   ├── types.ts                 # Định nghĩa kiểu dữ liệu
 │   └── components/
@@ -84,6 +85,6 @@ banner-ai/
 ├── vite.config.ts · tailwind.config.js · tsconfig.json · package.json
 ```
 
-> Đổi model AI: sửa hằng `IMAGE_MODEL` trong [src/flow-sdk.ts](src/flow-sdk.ts)
-> (`gemini-3-pro-image-preview` = Nano Banana Pro, `gemini-2.5-flash-image` = bản thường).
+> Thêm/bớt model trong dropdown: sửa mảng `IMAGE_MODELS` trong [src/flow-sdk.ts](src/flow-sdk.ts)
+> (dùng đúng slug OpenRouter, vd `google/gemini-3-pro-image-preview`, `openai/gpt-5.4-image-2`).
 > Đổi URL Pages: sửa `APP_URL` trong [electron/main.cjs](electron/main.cjs).

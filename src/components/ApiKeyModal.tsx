@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PillButton } from './Primitives';
 
-/** Popup nhập/đổi Google Gemini API key. Key lưu localStorage trên máy người dùng. */
+/** Popup nhập/đổi OpenRouter API key. Key lưu localStorage trên máy người dùng. */
 export const ApiKeyModal: React.FC<{
   isOpen: boolean;
   currentKey: string;
@@ -38,18 +38,18 @@ export const ApiKeyModal: React.FC<{
       >
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[20px] text-amber-400">key</span>
-          <h2 className="text-[15px] font-semibold text-white">Google Gemini API Key</h2>
+          <h2 className="text-[15px] font-semibold text-white">OpenRouter API Key</h2>
         </div>
 
         <p className="text-[11px] text-white/50 leading-relaxed">
-          App dùng key của bạn để tạo ảnh. Lấy key miễn phí tại{' '}
+          App dùng key của bạn để tạo ảnh qua OpenRouter (cho mọi model). Lấy key tại{' '}
           <a
-            href="https://aistudio.google.com/apikey"
+            href="https://openrouter.ai/keys"
             target="_blank"
             rel="noreferrer"
             className="text-amber-400 underline"
           >
-            aistudio.google.com/apikey
+            openrouter.ai/keys
           </a>
           . Key chỉ lưu trên máy bạn.
         </p>

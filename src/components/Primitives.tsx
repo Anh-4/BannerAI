@@ -70,6 +70,29 @@ export const SegmentedToggle: React.FC<{
   </div>
 );
 
+export const Dropdown: React.FC<{
+  label?: string;
+  value: string;
+  items: { value: string; label: string }[];
+  onChange: (val: string) => void;
+}> = ({ label, value, items, onChange }) => (
+  <div className="flex flex-col gap-1 w-full">
+    {label && <span className="text-[10px] text-white/40 ml-2 font-medium uppercase tracking-wider">{label}</span>}
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full h-[40px] appearance-none border border-[#595959] hover:border-[#7a7a7a] focus:border-[#969696] rounded-xl pl-3 pr-9 bg-[#141414] text-[12px] font-medium text-white tracking-[0.1px] focus:outline-none transition-colors cursor-pointer"
+      >
+        {items.map((it) => (
+          <option key={it.value} value={it.value} className="bg-[#141414] text-white">{it.label}</option>
+        ))}
+      </select>
+      <span className="material-symbols-outlined text-[18px] text-white/40 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+    </div>
+  </div>
+);
+
 export const ZoomModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;

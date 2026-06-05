@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Flow } from './flow-sdk';
-import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal } from './components/Primitives';
+import { Flow, IMAGE_MODELS, CUSTOM_MODEL_ID } from './flow-sdk';
+import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal, Dropdown } from './components/Primitives';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { supabase } from './supabase';
 import { BannerInputState, GeneratedOption, AspectRatio, MediaItem } from './types';
@@ -24,18 +24,22 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string>(() => {
-    try { return localStorage.getItem('GEMINI_API_KEY') || ''; } catch { return ''; }
+    try { return localStorage.getItem('OPENROUTER_API_KEY') || ''; } catch { return ''; }
   });
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
 
+  // Model AI dùng để sinh ảnh (qua OpenRouter). 'Khác' -> nhập model ID thủ công.
+  const [model, setModel] = useState<string>(IMAGE_MODELS[0].id);
+  const [customModel, setCustomModel] = useState('');
+
   // Mỗi khi mở app: hiện popup nhập/đổi API key (bỏ qua nếu đã nhúng key lúc build).
   useEffect(() => {
-    const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY;
+    const envKey = (import.meta as any).env?.VITE_OPENROUTER_API_KEY;
     if (!envKey) setApiKeyModalOpen(true);
   }, []);
 
   const saveApiKey = (key: string) => {
-    try { localStorage.setItem('GEMINI_API_KEY', key); } catch {}
+    try { localStorage.setItem('OPENROUTER_API_KEY', key); } catch {}
     setApiKey(key);
     setApiKeyModalOpen(false);
   };
@@ -108,6 +112,9 @@ export default function App() {
   };
 
   const generateSingleOption = async (index: number) => {
+    const modelId = model === CUSTOM_MODEL_ID ? customModel.trim() : model;
+    if (!modelId) { setError('Hãy nhập Model ID cho lựa chọn "Khác".'); return; }
+
     setError(null);
     setLoadingIndices(prev => new Set(prev).add(index));
 
@@ -122,7 +129,7 @@ export default function App() {
 
       const result = await Flow.generate.image({
         prompt: prompt,
-        modelDisplayName: '🍌 Nano Banana Pro',
+        model: modelId,
         ...(allRefs.length > 0 ? { referenceImageMediaIds: allRefs.slice(0, 10) } : {}),
         aspectRatio: apiAspectRatio as any,
       });
@@ -320,6 +327,26 @@ export default function App() {
 
         {/* Generate Button */}
         <div className="pt-3">
+          {/* Chọn model AI (qua OpenRouter) — đổi qua lại giữa các model */}
+          <div className="mb-3">
+            <Dropdown
+              label="Model AI (OpenRouter)"
+              value={model}
+              items={[
+                ...IMAGE_MODELS.map(m => ({ value: m.id, label: m.label })),
+                { value: CUSTOM_MODEL_ID, label: 'Khác (nhập model ID)…' },
+              ]}
+              onChange={setModel}
+            />
+            {model === CUSTOM_MODEL_ID && (
+              <input
+                value={customModel}
+                onChange={(e) => setCustomModel(e.target.value)}
+                placeholder="vd: black-forest-labs/flux-1.1-pro"
+                className="mt-2 w-full border border-[#595959] focus:border-[#969696] rounded-xl px-3 py-2 bg-transparent text-[11px] text-white placeholder-white/25 focus:outline-none transition-colors"
+              />
+            )}
+          </div>
           <PillButton
             variant="solid"
             icon={<span className="material-symbols-outlined text-[18px] animate-pulse">auto_awesome</span>}
