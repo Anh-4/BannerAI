@@ -1,0 +1,13 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC24B"/>
+      <stop offset="1" stop-color="#FF7A1A"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="232" fill="url(#bg)"/>
+  <!-- Sparkle lớn (kiểu auto_awesome, trùng icon nút Tạo trong app) -->
+  <path d="M512 232 C540 392 632 484 792 512 C632 540 540 632 512 792 C484 632 392 540 232 512 C392 484 484 392 512 232 Z" fill="#1b1300"/>
+  <!-- Sparkle nhỏ -->
+  <path d="M772 286 C784 338 814 368 866 380 C814 392 784 422 772 474 C760 422 730 392 678 380 C730 368 760 338 772 286 Z" fill="#1b1300" opacity="0.9"/>
+</svg>

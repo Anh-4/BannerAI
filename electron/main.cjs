@@ -1,8 +1,24 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 const isDev = !!process.env.ELECTRON_DEV;
+
+function broadcast(channel, payload) {
+  for (const w of BrowserWindow.getAllWindows()) {
+    w.webContents.send(channel, payload);
+  }
+}
+
+// Chuyển các sự kiện của autoUpdater về giao diện để nút "Kiểm tra cập nhật" hiển thị trạng thái.
+function setupAutoUpdater() {
+  autoUpdater.on('checking-for-update', () => broadcast('updater:status', { state: 'checking' }));
+  autoUpdater.on('update-available', (info) => broadcast('updater:status', { state: 'available', version: info?.version }));
+  autoUpdater.on('update-not-available', (info) => broadcast('updater:status', { state: 'none', version: info?.version }));
+  autoUpdater.on('download-progress', (p) => broadcast('updater:status', { state: 'downloading', percent: Math.round(p?.percent || 0) }));
+  autoUpdater.on('update-downloaded', (info) => broadcast('updater:status', { state: 'downloaded', version: info?.version }));
+  autoUpdater.on('error', (e) => broadcast('updater:status', { state: 'error', message: e?.message || String(e) }));
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -13,6 +29,7 @@ function createWindow() {
     backgroundColor: '#0e0e0e',
     autoHideMenuBar: true,
     webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -32,15 +49,35 @@ function createWindow() {
   });
 }
 
+// --- IPC cho nút "Kiểm tra cập nhật" trong app ---
+ipcMain.handle('app:version', () => app.getVersion());
+
+ipcMain.handle('updater:check', async () => {
+  if (isDev) {
+    broadcast('updater:status', { state: 'dev' });
+    return { state: 'dev' };
+  }
+  try {
+    await autoUpdater.checkForUpdates();
+    return { ok: true };
+  } catch (e) {
+    broadcast('updater:status', { state: 'error', message: e?.message || String(e) });
+    return { ok: false };
+  }
+});
+
+ipcMain.handle('updater:quitAndInstall', () => {
+  autoUpdater.quitAndInstall();
+});
+
 app.whenReady().then(() => {
+  setupAutoUpdater();
   createWindow();
 
-  // Auto-update: chỉ chạy ở bản đã đóng gói (bản cài Setup), bỏ qua khi dev/portable.
-  // Tải bản mới ở nền, cài tự động khi người dùng thoát app -> lần mở sau là bản mới.
+  // Tự kiểm tra cập nhật khi mở (bỏ qua khi dev). Tải ngầm, cài khi thoát app.
   if (!isDev) {
-    autoUpdater.on('error', (e) => console.error('[auto-update]', e?.message || e));
     autoUpdater.checkForUpdatesAndNotify().catch((e) =>
-      console.error('[auto-update] check failed:', e?.message || e)
+      console.error('[auto-update]', e?.message || e)
     );
   }
 });

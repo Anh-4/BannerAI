@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Flow } from './flow-sdk';
 import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal } from './components/Primitives';
+import { UpdateButton } from './components/UpdateButton';
 import { BannerInputState, GeneratedOption, AspectRatio, MediaItem } from './types';
 
 export default function App() {
@@ -311,6 +312,7 @@ export default function App() {
           >
             {loadingIndices.size > 0 ? `Đang tạo ${loadingIndices.size} mẫu...` : "Tạo tất cả các mẫu"}
           </PillButton>
+          <UpdateButton />
         </div>
       </div>
 

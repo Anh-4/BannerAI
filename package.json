@@ -1,13 +1,14 @@
 {
   "name": "banner-ai",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Banner AI - tạo banner quảng cáo bằng AI (Gemini Nano Banana Pro) cho Kozmoz Studio",
   "author": "Kozmoz Studio",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "make-icon": "node scripts/make-icon.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:127.0.0.1:5173 && cross-env ELECTRON_DEV=1 electron .\"",
@@ -46,6 +47,7 @@
       "electron/**/*"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "portable"
