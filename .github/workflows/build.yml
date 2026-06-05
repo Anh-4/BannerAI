@@ -5,6 +5,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# Cần quyền ghi để tạo/đính file vào GitHub Release.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
