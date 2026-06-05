@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Flow } from './flow-sdk';
 import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal } from './components/Primitives';
 import { UpdateButton } from './components/UpdateButton';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import { BannerInputState, GeneratedOption, AspectRatio, MediaItem } from './types';
 
 export default function App() {
@@ -22,6 +23,22 @@ export default function App() {
   const [loadingIndices, setLoadingIndices] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string>(() => {
+    try { return localStorage.getItem('GEMINI_API_KEY') || ''; } catch { return ''; }
+  });
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
+
+  // Mỗi khi mở app: hiện popup nhập/đổi API key (bỏ qua nếu đã nhúng key lúc build).
+  useEffect(() => {
+    const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY;
+    if (!envKey) setApiKeyModalOpen(true);
+  }, []);
+
+  const saveApiKey = (key: string) => {
+    try { localStorage.setItem('GEMINI_API_KEY', key); } catch {}
+    setApiKey(key);
+    setApiKeyModalOpen(false);
+  };
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -313,6 +330,13 @@ export default function App() {
             {loadingIndices.size > 0 ? `Đang tạo ${loadingIndices.size} mẫu...` : "Tạo tất cả các mẫu"}
           </PillButton>
           <UpdateButton />
+          <button
+            onClick={() => setApiKeyModalOpen(true)}
+            className="w-full mt-2 text-[10px] text-white/40 hover:text-white flex items-center justify-center gap-1 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[13px]">key</span>
+            <span>Đổi API Key</span>
+          </button>
         </div>
       </div>
 
@@ -406,6 +430,14 @@ export default function App() {
         isOpen={!!zoomImage}
         onClose={() => setZoomImage(null)}
         imageSrc={zoomImage || ''}
+      />
+
+      <ApiKeyModal
+        isOpen={apiKeyModalOpen}
+        currentKey={apiKey}
+        required={!apiKey}
+        onSave={saveApiKey}
+        onClose={() => setApiKeyModalOpen(false)}
       />
     </div>
   );

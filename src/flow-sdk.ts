@@ -21,21 +21,13 @@ const uid = (): string =>
   globalThis.crypto?.randomUUID?.() ??
   `id-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
 
-/** Lấy API key: ưu tiên key nhúng lúc build (team nội bộ) -> key người dùng đã lưu -> hỏi. */
+/** Lấy API key: ưu tiên key nhúng lúc build (team nội bộ) -> key người dùng đã lưu (qua popup). */
 function getApiKey(): string {
   const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY as string | undefined;
   if (envKey && envKey.trim()) return envKey.trim();
 
-  let key = (localStorage.getItem('GEMINI_API_KEY') || '').trim();
-  if (!key) {
-    key = (
-      window.prompt(
-        'Nhập Google Gemini API key (lấy miễn phí tại https://aistudio.google.com/apikey):'
-      ) || ''
-    ).trim();
-    if (key) localStorage.setItem('GEMINI_API_KEY', key);
-  }
-  if (!key) throw new Error('Chưa có Gemini API key — không thể tạo banner.');
+  const key = (localStorage.getItem('GEMINI_API_KEY') || '').trim();
+  if (!key) throw new Error("Chưa có Gemini API key — bấm 'Đổi API Key' ở góc dưới để nhập.");
   return key;
 }
 
