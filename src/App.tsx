@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Flow } from './flow-sdk';
 import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal } from './components/Primitives';
 import { ApiKeyModal } from './components/ApiKeyModal';
+import { supabase } from './supabase';
 import { BannerInputState, GeneratedOption, AspectRatio, MediaItem } from './types';
 
 export default function App() {
@@ -328,13 +329,22 @@ export default function App() {
           >
             {loadingIndices.size > 0 ? `Đang tạo ${loadingIndices.size} mẫu...` : "Tạo tất cả các mẫu"}
           </PillButton>
-          <button
-            onClick={() => setApiKeyModalOpen(true)}
-            className="w-full mt-3 pt-3 border-t border-white/5 text-[10px] text-white/40 hover:text-white flex items-center justify-center gap-1 transition-colors"
-          >
-            <span className="material-symbols-outlined text-[13px]">key</span>
-            <span>Đổi API Key</span>
-          </button>
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+            <button
+              onClick={() => setApiKeyModalOpen(true)}
+              className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[13px]">key</span>
+              <span>Đổi API Key</span>
+            </button>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[13px]">logout</span>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
         </div>
       </div>
 
