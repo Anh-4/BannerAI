@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Flow } from './flow-sdk';
 import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal } from './components/Primitives';
-import { UpdateButton } from './components/UpdateButton';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { BannerInputState, GeneratedOption, AspectRatio, MediaItem } from './types';
 
@@ -329,10 +328,9 @@ export default function App() {
           >
             {loadingIndices.size > 0 ? `Đang tạo ${loadingIndices.size} mẫu...` : "Tạo tất cả các mẫu"}
           </PillButton>
-          <UpdateButton />
           <button
             onClick={() => setApiKeyModalOpen(true)}
-            className="w-full mt-2 text-[10px] text-white/40 hover:text-white flex items-center justify-center gap-1 transition-colors"
+            className="w-full mt-3 pt-3 border-t border-white/5 text-[10px] text-white/40 hover:text-white flex items-center justify-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-[13px]">key</span>
             <span>Đổi API Key</span>

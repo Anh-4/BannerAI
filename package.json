@@ -1,7 +1,7 @@
 {
   "name": "banner-ai",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Banner AI - tạo banner quảng cáo bằng AI (Gemini Nano Banana Pro) cho Kozmoz Studio",
   "author": "Kozmoz Studio",
   "main": "electron/main.cjs",
@@ -12,12 +12,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:127.0.0.1:5173 && cross-env ELECTRON_DEV=1 electron .\"",
-    "electron:build": "npm run build && electron-builder --win",
-    "dist": "electron-builder --win"
+    "dist:win": "npm run build && electron-builder --win portable"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",
-    "electron-updater": "^6.3.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -48,22 +46,10 @@
     ],
     "win": {
       "icon": "build/icon.ico",
-      "target": [
-        "nsis",
-        "portable"
-      ]
+      "target": "portable"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Anh-4",
-        "repo": "BannerAI",
-        "releaseType": "release"
-      }
-    ]
+    "portable": {
+      "artifactName": "Banner-AI-${version}-portable.exe"
+    }
   }
 }
