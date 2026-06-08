@@ -98,15 +98,20 @@ export default function App() {
     const styleDesc = inputs.style || "professional commercial photography";
     const textContent = [inputs.text1, inputs.text2, inputs.text3].filter(t => t.trim() !== '').map(t => `"${t}"`).join(", ");
 
+    // Ràng buộc BẮT BUỘC cho mọi mẫu: giữ nguyên design trên ảnh tải lên,
+    // AI chỉ được tách nền / cắt ghép, cấm vẽ lại hay thay đổi sản phẩm.
+    const preserveReference =
+      ` CRITICAL — REFERENCE FIDELITY: The uploaded reference image(s) of the product must be preserved EXACTLY as provided. Do NOT redraw, regenerate, restyle, recolor, add, remove, or alter any artwork, graphics, logos, patterns, textures, text, or details printed on the product. You may ONLY cut the product out / remove or replace its background and composite it into the layout. Treat the product as a fixed, pixel-faithful cutout — never reinterpret or redesign it.`;
+
     const prompts = [
       // Option 1: Minimalist & Professional Studio
-      `High-end minimalist studio advertisement for ${productInfo}. Style: ${styleDesc}. Clean, professional lighting with soft shadows. Minimalist background, high-resolution commercial photography, sharp focus. Marketing text: ${textContent}.`,
+      `High-end minimalist studio advertisement for ${productInfo}. Style: ${styleDesc}. Clean, professional lighting with soft shadows. Minimalist background, high-resolution commercial photography, sharp focus. Marketing text: ${textContent}.${preserveReference}`,
 
       // Option 2: Cinematic & Atmospheric
-      `Cinematic lifestyle advertising poster for ${productInfo}. Style: ${styleDesc}. Dramatic lighting, atmospheric mood, shallow depth of field with beautiful bokeh background. Professional cinematic composition. Text: ${textContent}.`,
+      `Cinematic lifestyle advertising poster for ${productInfo}. Style: ${styleDesc}. Dramatic lighting, atmospheric mood, shallow depth of field with beautiful bokeh background. Professional cinematic composition. Text: ${textContent}.${preserveReference}`,
 
       // Option 3: Social Media Ad (Dynamic Speed & Contrast) - UPDATED
-      `Premium social media advertising banner for ${productInfo}. Style: ${styleDesc}. Incorporate dynamic "speed racing shapes", slanted geometric lines, and motion energy elements in the design. Minimalist simple background with high color contrast against the product. Use a dark moody aesthetic or deep background blur (bokeh) to make the main product pop and stand out intensely. High-end professional advertising layout, sharp product focus, luxury commercial look. Marketing text: ${textContent}.`
+      `Premium social media advertising banner for ${productInfo}. Style: ${styleDesc}. Incorporate dynamic "speed racing shapes", slanted geometric lines, and motion energy elements in the design. Minimalist simple background with high color contrast against the product. Use a dark moody aesthetic or deep background blur (bokeh) to make the main product pop and stand out intensely. High-end professional advertising layout, sharp product focus, luxury commercial look. Marketing text: ${textContent}.${preserveReference}`
     ];
     return prompts[index] || prompts[0];
   };
