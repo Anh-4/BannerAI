@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Flow, IMAGE_MODELS, CUSTOM_MODEL_ID } from './flow-sdk';
+import { Flow, MODELS_BY_PROVIDER, CUSTOM_MODEL_ID, Provider, DEFAULT_PROVIDER, getProviderInfo } from './flow-sdk';
 import { SectionLabel, PillButton, TextInput, SegmentedToggle, ZoomModal, Dropdown } from './components/Primitives';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { supabase } from './supabase';
@@ -23,23 +23,46 @@ export default function App() {
   const [loadingIndices, setLoadingIndices] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState<string>(() => {
-    try { return localStorage.getItem('OPENROUTER_API_KEY') || ''; } catch { return ''; }
-  });
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
 
-  // Model AI dùng để sinh ảnh (qua OpenRouter). 'Khác' -> nhập model ID thủ công.
-  const [model, setModel] = useState<string>(IMAGE_MODELS[0].id);
+  // Đọc key đã lưu của một provider.
+  const readKeyFor = (p: Provider): string => {
+    try { return localStorage.getItem(getProviderInfo(p).storageKey) || ''; } catch { return ''; }
+  };
+
+  // Provider AI đang dùng (OpenRouter / Gemini) — chọn ở popup API key.
+  const [provider, setProvider] = useState<Provider>(() => {
+    try {
+      const p = localStorage.getItem('AI_PROVIDER');
+      return p === 'gemini' || p === 'openrouter' ? p : DEFAULT_PROVIDER;
+    } catch { return DEFAULT_PROVIDER; }
+  });
+  const [apiKey, setApiKey] = useState<string>('');
+
+  // Model AI dùng để sinh ảnh (theo provider). 'Khác' -> nhập model ID thủ công.
+  const [model, setModel] = useState<string>(MODELS_BY_PROVIDER[provider][0].id);
   const [customModel, setCustomModel] = useState('');
 
-  // Mỗi khi mở app: hiện popup nhập/đổi API key (bỏ qua nếu đã nhúng key lúc build).
+  // Đổi provider: nạp lại key đã lưu + đảm bảo model thuộc danh sách của provider mới.
   useEffect(() => {
-    const envKey = (import.meta as any).env?.VITE_OPENROUTER_API_KEY;
-    if (!envKey) setApiKeyModalOpen(true);
+    setApiKey(readKeyFor(provider));
+    const list = MODELS_BY_PROVIDER[provider];
+    setModel((cur) => (cur === CUSTOM_MODEL_ID || list.some((m) => m.id === cur) ? cur : list[0].id));
+  }, [provider]);
+
+  // Mỗi khi mở app: hiện popup nếu provider hiện tại chưa có key (env hoặc localStorage).
+  useEffect(() => {
+    const info = getProviderInfo(provider);
+    const envKey = (import.meta as any).env?.[info.envKey];
+    if (!envKey && !readKeyFor(provider)) setApiKeyModalOpen(true);
   }, []);
 
-  const saveApiKey = (key: string) => {
-    try { localStorage.setItem('OPENROUTER_API_KEY', key); } catch {}
+  const saveApiKey = (p: Provider, key: string) => {
+    try {
+      localStorage.setItem(getProviderInfo(p).storageKey, key);
+      localStorage.setItem('AI_PROVIDER', p);
+    } catch {}
+    setProvider(p);
     setApiKey(key);
     setApiKeyModalOpen(false);
   };
@@ -135,6 +158,7 @@ export default function App() {
       const result = await Flow.generate.image({
         prompt: prompt,
         model: modelId,
+        provider: provider,
         ...(allRefs.length > 0 ? { referenceImageMediaIds: allRefs.slice(0, 10) } : {}),
         aspectRatio: apiAspectRatio as any,
       });
@@ -332,13 +356,13 @@ export default function App() {
 
         {/* Generate Button */}
         <div className="pt-3">
-          {/* Chọn model AI (qua OpenRouter) — đổi qua lại giữa các model */}
+          {/* Chọn model AI (theo provider đang dùng) — đổi qua lại giữa các model */}
           <div className="mb-3">
             <Dropdown
-              label="Model AI (OpenRouter)"
+              label={`Model AI (${getProviderInfo(provider).label})`}
               value={model}
               items={[
-                ...IMAGE_MODELS.map(m => ({ value: m.id, label: m.label })),
+                ...MODELS_BY_PROVIDER[provider].map(m => ({ value: m.id, label: m.label })),
                 { value: CUSTOM_MODEL_ID, label: 'Khác (nhập model ID)…' },
               ]}
               onChange={setModel}
@@ -376,6 +400,10 @@ export default function App() {
               <span className="material-symbols-outlined text-[13px]">logout</span>
               <span>Đăng xuất</span>
             </button>
+          </div>
+          {/* Tên app + phiên bản (tự cập nhật theo version trong package.json) */}
+          <div className="mt-2 text-[9px] text-white/25 tracking-wide">
+            Banner AI By 4 · v{__APP_VERSION__}
           </div>
         </div>
       </div>
@@ -474,8 +502,9 @@ export default function App() {
 
       <ApiKeyModal
         isOpen={apiKeyModalOpen}
-        currentKey={apiKey}
         required={!apiKey}
+        provider={provider}
+        getKeyFor={readKeyFor}
         onSave={saveApiKey}
         onClose={() => setApiKeyModalOpen(false)}
       />

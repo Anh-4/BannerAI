@@ -1,29 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { PillButton } from './Primitives';
+import { PillButton, Dropdown } from './Primitives';
+import { Provider, PROVIDERS, getProviderInfo } from '../flow-sdk';
 
-/** Popup nhập/đổi OpenRouter API key. Key lưu localStorage trên máy người dùng. */
+/**
+ * Popup chọn nhà cung cấp (OpenRouter / Gemini) và nhập/đổi API key.
+ * Mỗi provider lưu key riêng trong localStorage (đổi provider không mất key cũ).
+ */
 export const ApiKeyModal: React.FC<{
   isOpen: boolean;
-  currentKey: string;
-  required: boolean; // chưa có key -> bắt buộc nhập, không cho đóng
-  onSave: (key: string) => void;
+  required: boolean;                 // chưa có key cho provider đang chọn -> bắt buộc nhập
+  provider: Provider;                // provider đang dùng
+  getKeyFor: (p: Provider) => string; // đọc key đã lưu của 1 provider
+  onSave: (provider: Provider, key: string) => void;
   onClose: () => void;
-}> = ({ isOpen, currentKey, required, onSave, onClose }) => {
-  const [val, setVal] = useState(currentKey);
+}> = ({ isOpen, required, provider, getKeyFor, onSave, onClose }) => {
+  const [selProvider, setSelProvider] = useState<Provider>(provider);
+  const [val, setVal] = useState('');
   const [show, setShow] = useState(false);
 
+  // Mỗi lần mở popup: đồng bộ provider + key đang lưu của provider đó.
   useEffect(() => {
-    if (isOpen) setVal(currentKey);
-  }, [isOpen, currentKey]);
+    if (isOpen) {
+      setSelProvider(provider);
+      setVal(getKeyFor(provider));
+    }
+  }, [isOpen, provider]);
 
   if (!isOpen) return null;
 
+  const info = getProviderInfo(selProvider);
   const canClose = !required;
+
+  // Đổi provider trong dropdown -> nạp key đã lưu của provider mới.
+  const changeProvider = (p: string) => {
+    const np = p as Provider;
+    setSelProvider(np);
+    setVal(getKeyFor(np));
+  };
 
   const save = () => {
     const k = val.trim();
     if (!k) return;
-    onSave(k);
+    onSave(selProvider, k);
   };
 
   return (
@@ -38,18 +56,25 @@ export const ApiKeyModal: React.FC<{
       >
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[20px] text-amber-400">key</span>
-          <h2 className="text-[15px] font-semibold text-white">OpenRouter API Key</h2>
+          <h2 className="text-[15px] font-semibold text-white">API Key</h2>
         </div>
 
+        <Dropdown
+          label="Nhà cung cấp"
+          value={selProvider}
+          items={PROVIDERS.map((p) => ({ value: p.id, label: p.label }))}
+          onChange={changeProvider}
+        />
+
         <p className="text-[11px] text-white/50 leading-relaxed">
-          App dùng key của bạn để tạo ảnh qua OpenRouter (cho mọi model). Lấy key tại{' '}
+          App dùng key của bạn để tạo ảnh qua <span className="text-white/80">{info.label}</span> (cho mọi model). Lấy key tại{' '}
           <a
-            href="https://openrouter.ai/keys"
+            href={info.keyUrl}
             target="_blank"
             rel="noreferrer"
             className="text-amber-400 underline"
           >
-            openrouter.ai/keys
+            {info.keyUrl.replace(/^https?:\/\//, '')}
           </a>
           . Key chỉ lưu trên máy bạn.
         </p>
@@ -60,7 +85,7 @@ export const ApiKeyModal: React.FC<{
             value={val}
             onChange={(e) => setVal(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && save()}
-            placeholder="Dán API key vào đây..."
+            placeholder={`Dán API key ${info.label} vào đây...`}
             autoFocus
             className="w-full border border-[#595959] focus:border-amber-400 rounded-xl px-3 py-2.5 pr-10 bg-transparent text-[12px] text-white placeholder-white/25 focus:outline-none transition-colors"
           />
